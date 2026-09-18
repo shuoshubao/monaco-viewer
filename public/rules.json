@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {
+          "header": "content-type",
+          "operation": "set",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "*",
+      "resourceTypes": ["main_frame"],
+      "responseHeaders": [
+        {
+          "name": "content-type",
+          "value": "application/json",
+          "valueType": "prefix"
+        }
+      ]
+    }
+  }
+]
