@@ -1,0 +1,16 @@
+{
+    "name": "json-viewer",
+    "version": "1.0.0",
+    "description": "Chrome extension JSON viewer powered by Monaco Editor",
+    "type": "module",
+    "scripts": {
+        "build": "vite build && cp src/background.js dist/background.js"
+    },
+    "devDependencies": {
+        "monaco-editor": "^0.56.0",
+        "vite": "^8.3.0"
+    },
+    "dependencies": {
+        "@monaco-editor/loader": "^1.7.0"
+    }
+}
