@@ -38,19 +38,20 @@ body {
     overflow: hidden;
     background: #1e1e1e;
 }
-#monaco-root {
+#app {
     position: absolute;
-    width: 100vw;
-    height: 100vh;
     top: 0;
     left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding-top: 5px;
 }
 `;
     document.head.appendChild(style);
 
     // Monaco 容器
     const container = document.createElement('div');
-    container.id = 'monaco-root';
+    container.id = 'app';
     document.body.appendChild(container);
 
     // 注入 init.js 到主世界，加载并初始化 Monaco
