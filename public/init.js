@@ -1,83 +1,73 @@
 (async () => {
-    const params = new URLSearchParams(window.location.search);
-    const targetUrl = params.get('url');
-
-    if (!targetUrl) {
-        document.getElementById('loading').textContent = 'No URL specified';
-        return;
-    }
-
-    try {
-        // 拉取 JSON 内容
-        const res = await fetch(targetUrl, { credentials: 'include' });
-        const jsonText = await res.text();
-
-        // 加载 loader.js
-        document.getElementById('loading').textContent = 'Loading Monaco loader…';
-        await loadScript('vendor/vs/loader.js');
-
-        // 等待 require 可用
-        document.getElementById('loading').textContent = 'Waiting for require…';
-        await waitForRequire();
-
-        // 配置 require
-        document.getElementById('loading').textContent = 'Configuring require…';
-        require.config({
-            paths: { vs: 'vendor/vs/' }
+    // 请求路径配置
+    const paths = await new Promise(resolve => {
+        window.addEventListener('message', event => {
+            if (event.data?.type === 'PATHS') {
+                resolve(event.data.paths);
+            }
         });
+        window.postMessage({ type: 'GET_PATHS' }, '*');
+    });
 
-        // 禁用 worker（纯展示不需要）
-        window.MonacoEnvironment = {
-            getWorker: () => null
-        };
+    // 加载 loader.js
+    await loadScript(paths.loader);
 
-        // 加载 Monaco
-        document.getElementById('loading').textContent = 'Loading Monaco editor…';
-        const monaco = await new Promise((resolve, reject) => {
-            require(['vs/editor/editor.main'], monaco => resolve(monaco));
-        });
+    // 等待 require 可用
+    await waitForRequire();
 
-        // 加载 CSS
-        document.getElementById('loading').textContent = 'Loading styles…';
-        await loadCSS('vendor/vs/editor/editor.main.css');
+    // 配置 require
+    require.config({
+        paths: {
+            vs: paths.vs
+        }
+    });
 
-        // 手动注册 JSON 语言
-        monaco.languages.register({ id: 'json' });
-        monaco.languages.setTokensProvider('json', createJsonTokenizer());
+    // 禁用 worker
+    window.MonacoEnvironment = {
+        getWorker: () => null
+    };
 
-        // 初始化编辑器
-        document.getElementById('loading').remove();
-        monaco.editor.create(document.getElementById('container'), {
-            value: jsonText,
-            language: 'json',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            readOnly: true,
-            minimap: { enabled: true },
-            fontSize: 14,
-            wordWrap: 'on',
-            scrollBeyondLastLine: false,
-            folding: true,
-            renderLineHighlight: 'line'
-        });
-    } catch (err) {
-        document.getElementById('loading').textContent = 'Error: ' + err.message;
-        console.error(err);
-    }
+    // 加载 Monaco
+    const monaco = await new Promise(resolve => {
+        require(['vs/editor/editor.main'], monaco => resolve(monaco));
+    });
+
+    // 加载 CSS
+    await loadCSS(paths.css);
+
+    // 手动注册 JSON 语言
+    monaco.languages.register({ id: 'json' });
+    monaco.languages.setTokensProvider('json', createJsonTokenizer());
+
+    // 通知 content script，我们准备好了
+    window.postMessage({ type: 'MONACO_INIT' }, '*');
+
+    // 等待接收 JSON 内容
+    window.addEventListener('message', event => {
+        if (event.data?.type === 'JSON_CONTENT') {
+            monaco.editor.create(document.getElementById('monaco-root'), {
+                value: event.data.content,
+                language: 'json',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                readOnly: true,
+                minimap: { enabled: true },
+                fontSize: 14,
+                wordWrap: 'on',
+                scrollBeyondLastLine: false,
+                folding: true,
+                renderLineHighlight: 'line'
+            });
+        }
+    });
 })();
 
 function loadScript(src) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = src;
-        script.onload = () => {
-            console.log('Loaded:', src);
-            resolve();
-        };
-        script.onerror = e => {
-            console.error('Failed to load:', src, e);
-            reject(new Error('Failed to load ' + src));
-        };
+        script.onload = resolve;
+        script.onerror = reject;
         document.head.appendChild(script);
     });
 }
@@ -95,17 +85,10 @@ function loadCSS(href) {
 
 function waitForRequire() {
     return new Promise(resolve => {
-        if (window.require) {
-            console.log('require is already available');
-            return resolve();
-        }
-        console.log('Waiting for require…');
-        let attempts = 0;
+        if (window.require) return resolve();
         const interval = setInterval(() => {
-            attempts++;
             if (window.require) {
                 clearInterval(interval);
-                console.log('require is available after', attempts, 'attempts');
                 resolve();
             }
         }, 50);

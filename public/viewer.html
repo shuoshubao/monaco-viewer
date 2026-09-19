@@ -1,24 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monaco Viewer</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #1e1e1e; }
-    #container { width: 100%; height: 100vh; }
-    #loading {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      color: #888; font-family: -apple-system, sans-serif;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <div id="loading">Loading…</div>
-  <div id="container"></div>
-  <script src="viewer.js"></script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Monaco Viewer</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background: #1e1e1e;
+            }
+            #container {
+                width: 100%;
+                height: 100vh;
+            }
+            #loading {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #888;
+                font-family: -apple-system, sans-serif;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="loading">Loading…</div>
+        <div id="container"></div>
+        <script src="viewer.js"></script>
+    </body>
 </html>

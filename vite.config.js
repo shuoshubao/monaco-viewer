@@ -8,11 +8,7 @@ export default defineConfig({
             input: './src/content.js',
             output: {
                 format: 'iife',
-                entryFileNames: 'content.js',
-                assetFileNames: assetInfo => {
-                    if (assetInfo.name?.endsWith('.css')) return 'content.css';
-                    return '[name][extname]';
-                }
+                entryFileNames: 'content.js'
             }
         }
     }
