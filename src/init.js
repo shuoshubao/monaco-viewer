@@ -85,88 +85,93 @@ const getMarkdownStyles = () => `
         padding: 32px 24px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         line-height: 1.6;
-    }
 
-    html[data-theme="vs-dark"] .markdown-body { color: #e0e0e0; }
-    html[data-theme="vs"] .markdown-body { color: #24292e; }
+        html[data-theme="vs-dark"] & { color: #e0e0e0; }
+        html[data-theme="vs"] & { color: #24292e; }
 
-    .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-        margin-top: 24px;
-        margin-bottom: 16px;
-        font-weight: 600;
-        line-height: 1.25;
-    }
-    .markdown-body h1 { font-size: 2em; }
-    .markdown-body h2 { font-size: 1.5em; }
-    .markdown-body h3 { font-size: 1.25em; }
+        h1, h2, h3 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; }
+        h3 { font-size: 1.25em; }
 
-    html[data-theme="vs-dark"] .markdown-body h1,
-    html[data-theme="vs-dark"] .markdown-body h2 {
-        border-bottom: 1px solid #333;
-    }
-    html[data-theme="vs"] .markdown-body h1,
-    html[data-theme="vs"] .markdown-body h2 {
-        border-bottom: 1px solid #eaecef;
-    }
+        html[data-theme="vs-dark"] & h1,
+        html[data-theme="vs-dark"] & h2 {
+            border-bottom: 1px solid #333;
+        }
+        html[data-theme="vs"] & h1,
+        html[data-theme="vs"] & h2 {
+            border-bottom: 1px solid #eaecef;
+        }
 
-    .markdown-body p { margin: 0 0 16px; }
-    .markdown-body code {
-        padding: 2px 6px;
-        font-size: 85%;
-        border-radius: 3px;
-        font-family: 'SFMono-Regular', Consolas, monospace;
-    }
-    html[data-theme="vs-dark"] .markdown-body code {
-        background: rgba(110,118,129,0.4);
-    }
-    html[data-theme="vs"] .markdown-body code {
-        background: rgba(27,31,35,0.05);
-    }
+        p { margin: 0 0 16px; }
+        code {
+            padding: 2px 6px;
+            font-size: 85%;
+            border-radius: 3px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
 
-    .markdown-body pre {
-        padding: 16px;
-        overflow: auto;
-        font-size: 85%;
-        line-height: 1.45;
-        border-radius: 6px;
-        margin-bottom: 16px;
-    }
-    html[data-theme="vs-dark"] .markdown-body pre {
-        background: #2d2d2d;
-    }
-    html[data-theme="vs"] .markdown-body pre {
-        background: #f6f8fa;
-    }
+            html[data-theme="vs-dark"] & {
+                background: rgba(110,118,129,0.4);
+            }
+            html[data-theme="vs"] & {
+                background: rgba(27,31,35,0.05);
+            }
+        }
 
-    .markdown-body pre code {
-        padding: 0;
-        background: transparent;
-    }
-    .markdown-body ul, .markdown-body ol {
-        margin-bottom: 16px;
-        padding-left: 2em;
-    }
-    .markdown-body blockquote {
-        padding: 0 1em;
-        border-left: 0.25em solid;
-        margin: 0 0 16px;
-    }
-    html[data-theme="vs-dark"] .markdown-body blockquote {
-        color: #999;
-        border-left-color: #444;
-    }
-    html[data-theme="vs"] .markdown-body blockquote {
-        color: #6a737d;
-        border-left-color: #dfe2e5;
-    }
-    .markdown-body a {
-        text-decoration: none;
-    }
-    html[data-theme="vs-dark"] .markdown-body a {
-        color: #58a6ff;
-    }
-    html[data-theme="vs"] .markdown-body a {
-        color: #0366d6;
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            border-radius: 6px;
+            margin-bottom: 16px;
+
+            html[data-theme="vs-dark"] & {
+                background: #2d2d2d;
+            }
+            html[data-theme="vs"] & {
+                background: #f6f8fa;
+            }
+
+            code {
+                padding: 0;
+                background: transparent;
+            }
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 2em;
+        }
+        blockquote {
+            padding: 0 1em;
+            border-left: 0.25em solid;
+            margin: 0 0 16px;
+
+            html[data-theme="vs-dark"] & {
+                color: #999;
+                border-left-color: #444;
+            }
+            html[data-theme="vs"] & {
+                color: #6a737d;
+                border-left-color: #dfe2e5;
+            }
+        }
+        a {
+            text-decoration: none;
+
+            html[data-theme="vs-dark"] & {
+                color: #58a6ff;
+            }
+            html[data-theme="vs"] & {
+                color: #0366d6;
+            }
+        }
     }
 `;
 

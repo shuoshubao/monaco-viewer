@@ -14,30 +14,32 @@
             padding: 16px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             transition: background 0.2s, color 0.2s;
-        }
-
-        body[data-popup-theme="dark"] {
+            /* 默认深色，避免闪白 */
             background: #1e1e1e;
             color: #e0e0e0;
-        }
 
-        body[data-popup-theme="light"] {
-            background: #ffffff;
-            color: #24292e;
-        }
+            &[data-popup-theme="dark"] {
+                background: #1e1e1e;
+                color: #e0e0e0;
+            }
 
+            &[data-popup-theme="light"] {
+                background: #ffffff;
+                color: #24292e;
+            }
+        }
         .header {
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 20px;
-        }
 
-        body[data-popup-theme="dark"] .header {
-            color: #fff;
-        }
+            body[data-popup-theme="dark"] & {
+                color: #fff;
+            }
 
-        body[data-popup-theme="light"] .header {
-            color: #24292e;
+            body[data-popup-theme="light"] & {
+                color: #24292e;
+            }
         }
 
         .section {
@@ -49,14 +51,14 @@
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
 
-        body[data-popup-theme="dark"] .section-title {
-            color: #999;
-        }
+            body[data-popup-theme="dark"] & {
+                color: #999;
+            }
 
-        body[data-popup-theme="light"] .section-title {
-            color: #666;
+            body[data-popup-theme="light"] & {
+                color: #666;
+            }
         }
 
         /* Segmented 样式 */
@@ -64,14 +66,14 @@
             display: inline-flex;
             padding: 2px;
             border-radius: 8px;
-        }
 
-        body[data-popup-theme="dark"] .segmented {
-            background: #2d2d2d;
-        }
+            body[data-popup-theme="dark"] & {
+                background: #2d2d2d;
+            }
 
-        body[data-popup-theme="light"] .segmented {
-            background: #f0f0f0;
+            body[data-popup-theme="light"] & {
+                background: #f0f0f0;
+            }
         }
 
         .segmented-item {
@@ -83,26 +85,26 @@
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
-        }
 
-        body[data-popup-theme="dark"] .segmented-item {
-            color: #999;
-        }
+            body[data-popup-theme="dark"] & {
+                color: #999;
+            }
 
-        body[data-popup-theme="light"] .segmented-item {
-            color: #666;
-        }
+            body[data-popup-theme="light"] & {
+                color: #666;
+            }
 
-        body[data-popup-theme="dark"] .segmented-item.active {
-            background: #3c3c3c;
-            color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
+            body[data-popup-theme="dark"] &.active {
+                background: #3c3c3c;
+                color: #fff;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
 
-        body[data-popup-theme="light"] .segmented-item.active {
-            background: #ffffff;
-            color: #24292e;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            body[data-popup-theme="light"] &.active {
+                background: #ffffff;
+                color: #24292e;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
         }
 
         .setting-row {
@@ -123,34 +125,34 @@
             position: relative;
             cursor: pointer;
             transition: background 0.2s;
-        }
 
-        body[data-popup-theme="dark"] .toggle {
-            background: #444;
-        }
+            body[data-popup-theme="dark"] & {
+                background: #444;
+            }
 
-        body[data-popup-theme="light"] .toggle {
-            background: #d9d9d9;
-        }
+            body[data-popup-theme="light"] & {
+                background: #d9d9d9;
+            }
 
-        .toggle.active {
-            background: #007acc;
-        }
+            &.active {
+                background: #007acc;
+            }
 
-        .toggle::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #fff;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.2s;
-        }
+            &::after {
+                content: '';
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                background: #fff;
+                border-radius: 50%;
+                top: 2px;
+                left: 2px;
+                transition: transform 0.2s;
+            }
 
-        .toggle.active::after {
-            transform: translateX(16px);
+            &.active::after {
+                transform: translateX(16px);
+            }
         }
 
         .footer {
@@ -159,18 +161,19 @@
             border-top: 1px solid;
             font-size: 11px;
             text-align: center;
-        }
 
-        body[data-popup-theme="dark"] .footer {
-            border-top-color: #333;
-            color: #666;
-        }
+            body[data-popup-theme="dark"] & {
+                border-top-color: #333;
+                color: #666;
+            }
 
-        body[data-popup-theme="light"] .footer {
-            border-top-color: #eaecef;
-            color: #999;
+            body[data-popup-theme="light"] & {
+                border-top-color: #eaecef;
+                color: #999;
+            }
         }
     </style>
+    <script src="popup.js"></script>
 </head>
 
 <body>
@@ -193,8 +196,6 @@
     </div>
 
     <div class="footer">Version 0.1.0</div>
-
-    <script src="popup.js"></script>
 </body>
 
 </html>
