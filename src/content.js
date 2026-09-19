@@ -19,6 +19,12 @@
     // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';
 
+    // 根据类型设置 favicon
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.href = chrome.runtime.getURL(`icons/file-types/${type}.svg`);
+    document.head.appendChild(favicon);
+
     // 注入基础样式
     const style = document.createElement('style');
     style.textContent = `

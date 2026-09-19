@@ -27,7 +27,7 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": ["vendor/*", "vendor/**/*", "init.js"],
+            "resources": ["vendor/*", "vendor/**/*", "init.js", "icons/file-types/*"],
             "matches": ["<all_urls>"]
         }
     ],
