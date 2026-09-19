@@ -1,10 +1,20 @@
 // 检测页面类型，是的话注入 Monaco 渲染
 (async () => {
+    // 一开始就隐藏整个页面，避免闪烁
+    document.documentElement.style.display = 'none';
+
     // 问 background 当前 tab 的内容类型
     const { type } = await chrome.runtime.sendMessage({ type: 'CHECK_TYPE' });
     if (!type) {
+        // 不是我们支持的类型，显示原页面
+        document.documentElement.style.display = '';
         return;
     }
+
+    // 读取用户设置
+    const settings = await chrome.storage.local.get(['theme', 'markdownPreview']);
+    const theme = settings.theme || 'vs-dark';
+    const markdownPreview = settings.markdownPreview || false;
 
     // 等 DOM 加载完成
     if (!document.body) {
@@ -19,6 +29,9 @@
     // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';
 
+    // 恢复页面显示
+    document.documentElement.style.display = '';
+
     // 根据类型设置 favicon
     const faviconMap = { scss: 'sass' };
     const faviconName = faviconMap[type] || type;
@@ -28,17 +41,18 @@
     document.head.appendChild(favicon);
 
     // 注入基础样式
+    const bgColor = theme === 'vs' ? '#ffffff' : '#1e1e1e';
     const style = document.createElement('style');
     style.textContent = `
 * {
     box-sizing: border-box;
 }
-html,
 body {
+    padding: 0;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: #1e1e1e;
+    background: ${bgColor};
 }
 #app {
     position: absolute;
@@ -46,7 +60,9 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    padding-top: 5px;
+}
+#app:has(.markdown-body) {
+    padding-top: 0;
 }
 `;
     document.head.appendChild(style);
@@ -74,6 +90,10 @@ body {
                         loader: chrome.runtime.getURL('monaco-editor/vs/loader.js'),
                         vs: chrome.runtime.getURL('monaco-editor/vs'),
                         css: chrome.runtime.getURL('monaco-editor/vs/editor/editor.main.css')
+                    },
+                    settings: { theme, markdownPreview },
+                    lib: {
+                        markdownIt: chrome.runtime.getURL('markdown-it/markdown-it.min.js')
                     }
                 },
                 '*'
@@ -82,6 +102,21 @@ body {
         // Monaco 初始化完成，发送内容和类型给它渲染
         if (event.data?.type === 'MONACO_INIT') {
             window.postMessage({ type: 'CONTENT', content, language: type }, '*');
+        }
+    });
+
+    // 监听来自 popup 的消息
+    chrome.runtime.onMessage.addListener(message => {
+        if (message?.type === 'UPDATE_THEME') {
+            // 更新背景色
+            const bgColor = message.theme === 'vs' ? '#ffffff' : '#1e1e1e';
+            document.body.style.background = bgColor;
+            // 转发给 init.js
+            window.postMessage({ type: 'UPDATE_THEME', theme: message.theme }, '*');
+        }
+        if (message?.type === 'UPDATE_MARKDOWN_PREVIEW') {
+            // 转发给 init.js
+            window.postMessage({ type: 'UPDATE_MARKDOWN_PREVIEW', markdownPreview: message.markdownPreview }, '*');
         }
     });
 })();

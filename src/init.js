@@ -18,48 +18,185 @@ const loadCSS = href =>
         document.head.appendChild(link);
     });
 
-// 从 content script 获取扩展资源的路径
-const paths = await new Promise(resolve => {
+// 从 content script 获取扩展资源的路径和设置
+const { paths, settings, lib } = await new Promise(resolve => {
     window.addEventListener('message', event => {
         if (event.data?.type === 'PATHS') {
-            resolve(event.data.paths);
+            resolve(event.data);
         }
     });
     window.postMessage({ type: 'GET_PATHS' }, '*');
 });
 
-// 加载 Monaco 依赖
-await loadScript(paths.loader);
-
-require.config({ paths: { vs: paths.vs } });
-
-// 禁用 worker，纯展示不需要，返回一个空的 worker 对象避免报错
-window.MonacoEnvironment = {
-    getWorker: () => ({
-        postMessage: () => {},
-        terminate: () => {},
-        onmessage: null,
-        onerror: null
-    })
-};
-
-// 加载编辑器核心
-const monaco = await new Promise(resolve => {
-    require(['vs/editor/editor.main'], monaco => resolve(monaco));
-});
-
-await loadCSS(paths.css);
-
 // 通知 content script 我们准备好了
 window.postMessage({ type: 'MONACO_INIT' }, '*');
 
-// 接收内容和语言类型，初始化编辑器
-window.addEventListener('message', async event => {
-    if (event.data?.type !== 'CONTENT') {
-        return;
+let monaco = null;
+let editorInstance = null;
+let currentContent = '';
+let currentLanguage = 'markdown';
+let markdownItLoaded = false;
+
+const loadMonaco = async () => {
+    // 加载 Monaco 依赖
+    await loadScript(paths.loader);
+    require.config({ paths: { vs: paths.vs } });
+
+    // 禁用 worker，纯展示不需要，返回一个空的 worker 对象避免报错
+    window.MonacoEnvironment = {
+        getWorker: () => ({
+            postMessage: () => {},
+            terminate: () => {},
+            onmessage: null,
+            onerror: null
+        })
+    };
+
+    // 加载编辑器核心
+    monaco = await new Promise(resolve => {
+        require(['vs/editor/editor.main'], monaco => resolve(monaco));
+    });
+
+    await loadCSS(paths.css);
+};
+
+const ensureMarkdownIt = async () => {
+    if (!markdownItLoaded) {
+        // 先保存全局的 define，Monaco 的 loader 会接管 define，导致 markdown-it 被当成 AMD 模块加载
+        const originalDefine = window.define;
+        window.define = undefined;
+        await loadScript(lib.markdownIt);
+        window.define = originalDefine;
+        markdownItLoaded = true;
+    }
+};
+
+const getMarkdownStyles = () => `
+    html[data-theme="vs-dark"] body {
+        background: #1e1e1e;
+    }
+    html[data-theme="vs"] body {
+        background: #ffffff;
     }
 
-    const { content, language } = event.data;
+    .markdown-body {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+    }
+
+    html[data-theme="vs-dark"] .markdown-body { color: #e0e0e0; }
+    html[data-theme="vs"] .markdown-body { color: #24292e; }
+
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+        margin-top: 24px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+    .markdown-body h1 { font-size: 2em; }
+    .markdown-body h2 { font-size: 1.5em; }
+    .markdown-body h3 { font-size: 1.25em; }
+
+    html[data-theme="vs-dark"] .markdown-body h1,
+    html[data-theme="vs-dark"] .markdown-body h2 {
+        border-bottom: 1px solid #333;
+    }
+    html[data-theme="vs"] .markdown-body h1,
+    html[data-theme="vs"] .markdown-body h2 {
+        border-bottom: 1px solid #eaecef;
+    }
+
+    .markdown-body p { margin: 0 0 16px; }
+    .markdown-body code {
+        padding: 2px 6px;
+        font-size: 85%;
+        border-radius: 3px;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+    html[data-theme="vs-dark"] .markdown-body code {
+        background: rgba(110,118,129,0.4);
+    }
+    html[data-theme="vs"] .markdown-body code {
+        background: rgba(27,31,35,0.05);
+    }
+
+    .markdown-body pre {
+        padding: 16px;
+        overflow: auto;
+        font-size: 85%;
+        line-height: 1.45;
+        border-radius: 6px;
+        margin-bottom: 16px;
+    }
+    html[data-theme="vs-dark"] .markdown-body pre {
+        background: #2d2d2d;
+    }
+    html[data-theme="vs"] .markdown-body pre {
+        background: #f6f8fa;
+    }
+
+    .markdown-body pre code {
+        padding: 0;
+        background: transparent;
+    }
+    .markdown-body ul, .markdown-body ol {
+        margin-bottom: 16px;
+        padding-left: 2em;
+    }
+    .markdown-body blockquote {
+        padding: 0 1em;
+        border-left: 0.25em solid;
+        margin: 0 0 16px;
+    }
+    html[data-theme="vs-dark"] .markdown-body blockquote {
+        color: #999;
+        border-left-color: #444;
+    }
+    html[data-theme="vs"] .markdown-body blockquote {
+        color: #6a737d;
+        border-left-color: #dfe2e5;
+    }
+    .markdown-body a {
+        text-decoration: none;
+    }
+    html[data-theme="vs-dark"] .markdown-body a {
+        color: #58a6ff;
+    }
+    html[data-theme="vs"] .markdown-body a {
+        color: #0366d6;
+    }
+`;
+
+const disposeEditor = () => {
+    if (editorInstance) {
+        editorInstance.dispose();
+        editorInstance = null;
+    }
+};
+
+const renderMarkdown = async (content) => {
+    disposeEditor();
+    await ensureMarkdownIt();
+    const md = window.markdownit();
+    const html = md.render(content);
+    document.documentElement.dataset.theme = settings.theme;
+
+    document.querySelector('#app').innerHTML = `
+        <style>${getMarkdownStyles()}</style>
+        <div class="markdown-body">${html}</div>
+    `;
+};
+
+const renderEditor = async (content, language) => {
+    if (!monaco) {
+        await loadMonaco();
+    }
+
+    // 清空内容，准备重新创建编辑器
+    document.querySelector('#app').innerHTML = '';
 
     // 根据语言类型加载对应的语言服务
     if (language === 'json') {
@@ -88,10 +225,10 @@ window.addEventListener('message', async event => {
         });
     }
 
-    monaco.editor.create(document.querySelector('#app'), {
+    editorInstance = monaco.editor.create(document.querySelector('#app'), {
         value: content,
         language,
-        theme: 'vs-dark',
+        theme: settings.theme || 'vs-dark',
         readOnly: true,
         fontSize: 14,
         tabSize: 4,
@@ -101,4 +238,41 @@ window.addEventListener('message', async event => {
         renderLineHighlight: 'line',
         scrollBeyondLastLine: false
     });
+};
+
+const render = async () => {
+    if (currentLanguage === 'markdown' && settings.markdownPreview) {
+        await renderMarkdown(currentContent);
+    } else {
+        await renderEditor(currentContent, currentLanguage);
+    }
+};
+
+window.addEventListener('message', async event => {
+    if (event.data?.type === 'UPDATE_THEME') {
+        settings.theme = event.data.theme;
+        if (document.querySelector('.markdown-body')) {
+            document.documentElement.dataset.theme = event.data.theme;
+        } else if (editorInstance) {
+            editorInstance.updateOptions({ theme: event.data.theme });
+        }
+        return;
+    }
+
+    if (event.data?.type === 'UPDATE_MARKDOWN_PREVIEW') {
+        settings.markdownPreview = event.data.markdownPreview;
+        if (currentLanguage === 'markdown') {
+            await render();
+        }
+        return;
+    }
+
+    if (event.data?.type !== 'CONTENT') {
+        return;
+    }
+
+    const { content, language } = event.data;
+    currentContent = content;
+    currentLanguage = language;
+    await render();
 });
