@@ -41,6 +41,7 @@
     // 注入 init.js 到主世界，加载并初始化 Monaco
     const initScript = document.createElement('script');
     initScript.src = chrome.runtime.getURL('init.js');
+    initScript.type = 'module';
     initScript.onload = () => initScript.remove();
     document.head.appendChild(initScript);
 

@@ -1,56 +1,4 @@
 // 在主世界中运行，加载并初始化 Monaco 编辑器
-(async () => {
-    // 从 content script 获取扩展资源的路径
-    const paths = await new Promise(resolve => {
-        window.addEventListener('message', event => {
-            if (event.data?.type === 'PATHS') {
-                resolve(event.data.paths);
-            }
-        });
-        window.postMessage({ type: 'GET_PATHS' }, '*');
-    });
-
-    // 加载 Monaco 依赖
-    await loadScript(paths.loader);
-    await waitForRequire();
-    require.config({ paths: { vs: paths.vs } });
-
-    // 禁用 worker，纯展示不需要
-    window.MonacoEnvironment = { getWorker: () => null };
-
-    // 加载编辑器核心
-    const monaco = await new Promise(resolve => {
-        require(['vs/editor/editor.main'], monaco => resolve(monaco));
-    });
-
-    await loadCSS(paths.css);
-
-    // 手动注册 JSON 语法高亮
-    monaco.languages.register({ id: 'json' });
-    monaco.languages.setTokensProvider('json', createJsonTokenizer());
-
-    // 通知 content script 我们准备好了
-    window.postMessage({ type: 'MONACO_INIT' }, '*');
-
-    // 接收 JSON 内容，初始化编辑器
-    window.addEventListener('message', event => {
-        if (event.data?.type === 'JSON_CONTENT') {
-            monaco.editor.create(document.getElementById('monaco-root'), {
-                value: event.data.content,
-                language: 'json',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                readOnly: true,
-                minimap: { enabled: true },
-                fontSize: 14,
-                wordWrap: 'on',
-                scrollBeyondLastLine: false,
-                folding: true,
-                renderLineHighlight: 'line'
-            });
-        }
-    });
-})();
 
 const loadScript = src =>
     new Promise((resolve, reject) => {
@@ -163,5 +111,56 @@ const createJsonTokenizer = () => ({
         }
 
         return { tokens, endState: state };
+    }
+});
+
+// 从 content script 获取扩展资源的路径
+const paths = await new Promise(resolve => {
+    window.addEventListener('message', event => {
+        if (event.data?.type === 'PATHS') {
+            resolve(event.data.paths);
+        }
+    });
+    window.postMessage({ type: 'GET_PATHS' }, '*');
+});
+
+// 加载 Monaco 依赖
+await loadScript(paths.loader);
+await waitForRequire();
+require.config({ paths: { vs: paths.vs } });
+
+// 禁用 worker，纯展示不需要
+window.MonacoEnvironment = { getWorker: () => null };
+
+// 加载编辑器核心
+const monaco = await new Promise(resolve => {
+    require(['vs/editor/editor.main'], monaco => resolve(monaco));
+});
+
+await loadCSS(paths.css);
+
+// 手动注册 JSON 语法高亮
+monaco.languages.register({ id: 'json' });
+monaco.languages.setTokensProvider('json', createJsonTokenizer());
+
+// 通知 content script 我们准备好了
+window.postMessage({ type: 'MONACO_INIT' }, '*');
+
+// 接收 JSON 内容，初始化编辑器
+window.addEventListener('message', event => {
+    if (event.data?.type === 'JSON_CONTENT') {
+        monaco.editor.create(document.getElementById('monaco-root'), {
+            value: event.data.content,
+            language: 'json',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            readOnly: true,
+            minimap: { enabled: true },
+            fontSize: 14,
+            wordWrap: 'on',
+            scrollBeyondLastLine: false,
+            folding: true,
+            renderLineHighlight: 'line'
+        });
     }
 });
