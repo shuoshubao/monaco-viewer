@@ -20,9 +20,11 @@
     document.documentElement.innerHTML = '';
 
     // 根据类型设置 favicon
+    const faviconMap = { scss: 'sass' };
+    const faviconName = faviconMap[type] || type;
     const favicon = document.createElement('link');
     favicon.rel = 'icon';
-    favicon.href = chrome.runtime.getURL(`icons/file-types/${type}.svg`);
+    favicon.href = chrome.runtime.getURL(`icons/file-types/${faviconName}.svg`);
     document.head.appendChild(favicon);
 
     // 注入基础样式

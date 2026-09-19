@@ -5,8 +5,8 @@ const contentTypes = {
     javascript: /(application|text)\/(x-)?javascript/i,
     typescript: /(application|text)\/(x-)?typescript/i,
     css: /text\/css/i,
-    less: /text\/less/i,
-    scss: /text\/(s[ac]ss)/i,
+    less: /text\/(x-)?less/i,
+    scss: /text\/(x-)?s[ac]ss/i,
     yaml: /(application|text)\/(x-)?ya?ml/i,
     markdown: /text\/(x-)?markdown/i
 };
