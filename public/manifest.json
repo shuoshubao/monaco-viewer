@@ -3,8 +3,11 @@
     "name": "Monaco Viewer",
     "version": "0.1.0",
     "description": "Beautiful code viewer powered by Monaco Editor",
-    "permissions": ["declarativeNetRequest"],
+    "permissions": ["declarativeNetRequest", "webRequest"],
     "host_permissions": ["<all_urls>"],
+    "background": {
+        "service_worker": "background.js"
+    },
     "declarative_net_request": {
         "rule_resources": [
             {

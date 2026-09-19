@@ -14,14 +14,7 @@
         },
         "condition": {
             "urlFilter": "*",
-            "resourceTypes": ["main_frame"],
-            "responseHeaders": [
-                {
-                    "name": "content-type",
-                    "value": "application/json",
-                    "valueType": "prefix"
-                }
-            ]
+            "resourceTypes": ["main_frame"]
         }
     }
 ]

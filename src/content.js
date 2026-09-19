@@ -1,5 +1,11 @@
 // 检测页面是否是 JSON，是的话注入 Monaco 渲染
 (async () => {
+    // 问 background 当前 tab 是不是 JSON
+    const { isJson } = await chrome.runtime.sendMessage({ type: 'CHECK_JSON' });
+    if (!isJson) {
+        return;
+    }
+
     // 等 DOM 加载完成
     if (!document.body) {
         await new Promise(resolve => {
@@ -7,19 +13,8 @@
         });
     }
 
-    // 读取页面文本，清理 Chrome 内置 viewer 的行号
-    let jsonText = (document.body?.innerText || document.documentElement.innerText || '')
-        .split('\n')
-        .map(line => line.replace(/^\d+\s+/, ''))
-        .join('\n')
-        .trim();
-
-    // 不是 JSON 就退出
-    try {
-        JSON.parse(jsonText);
-    } catch {
-        return;
-    }
+    // 读取页面文本
+    let jsonText = document.body?.innerText || document.documentElement.innerText || '';
 
     // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';
