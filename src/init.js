@@ -33,8 +33,15 @@ await loadScript(paths.loader);
 
 require.config({ paths: { vs: paths.vs } });
 
-// 禁用 worker，纯展示不需要
-window.MonacoEnvironment = { getWorker: () => null };
+// 禁用 worker，纯展示不需要，返回一个空的 worker 对象避免报错
+window.MonacoEnvironment = {
+    getWorker: () => ({
+        postMessage: () => {},
+        terminate: () => {},
+        onmessage: null,
+        onerror: null
+    })
+};
 
 // 加载编辑器核心
 const monaco = await new Promise(resolve => {
