@@ -1,8 +1,8 @@
-// 检测页面是否是 JSON，是的话注入 Monaco 渲染
+// 检测页面类型，是的话注入 Monaco 渲染
 (async () => {
-    // 问 background 当前 tab 是不是 JSON
-    const { isJson } = await chrome.runtime.sendMessage({ type: 'CHECK_JSON' });
-    if (!isJson) {
+    // 问 background 当前 tab 的内容类型
+    const { type } = await chrome.runtime.sendMessage({ type: 'CHECK_TYPE' });
+    if (!type) {
         return;
     }
 
@@ -14,7 +14,7 @@
     }
 
     // 读取页面文本
-    let jsonText = document.body?.innerText || document.documentElement.innerText || '';
+    const content = document.body?.innerText || document.documentElement.innerText || '';
 
     // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';
@@ -22,10 +22,24 @@
     // 注入基础样式
     const style = document.createElement('style');
     style.textContent = `
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #1e1e1e; }
-    #monaco-root { width: 100%; height: 100vh; position: absolute; top: 0; left: 0; }
-  `;
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #1e1e1e;
+}
+#monaco-root {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+}
+`;
     document.head.appendChild(style);
 
     // Monaco 容器
@@ -56,9 +70,9 @@
                 '*'
             );
         }
-        // Monaco 初始化完成，发送 JSON 内容给它渲染
+        // Monaco 初始化完成，发送内容和类型给它渲染
         if (event.data?.type === 'MONACO_INIT') {
-            window.postMessage({ type: 'JSON_CONTENT', content: jsonText }, '*');
+            window.postMessage({ type: 'CONTENT', content, language: type }, '*');
         }
     });
 })();

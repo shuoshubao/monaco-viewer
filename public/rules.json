@@ -13,7 +13,7 @@
             ]
         },
         "condition": {
-            "urlFilter": "*",
+            "urlFilter": "*.json||*.js||*.jsx||*.ts||*.tsx||*.css||*.less||*.scss||*.sass||*.yaml||*.yml||*.md",
             "resourceTypes": ["main_frame"]
         }
     }

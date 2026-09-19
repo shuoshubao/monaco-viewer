@@ -32,88 +32,6 @@ const waitForRequire = () =>
         }, 50);
     });
 
-// 简单的 JSON 语法高亮 tokenizer
-const createJsonTokenizer = () => ({
-    getInitialState: () => ({ state: 'start' }),
-    tokenize: (line, state) => {
-        const tokens = [];
-        let pos = 0;
-        const len = line.length;
-
-        while (pos < len) {
-            const char = line[pos];
-
-            if (/\s/.test(char)) {
-                let end = pos;
-                while (end < len && /\s/.test(line[end])) end++;
-                tokens.push({ startIndex: pos, scopes: '' });
-                pos = end;
-                continue;
-            }
-
-            if ('{}[]'.includes(char)) {
-                tokens.push({ startIndex: pos, scopes: 'delimiter.bracket.json' });
-                pos++;
-                continue;
-            }
-
-            if (char === ':') {
-                tokens.push({ startIndex: pos, scopes: 'delimiter.colon.json' });
-                pos++;
-                continue;
-            }
-
-            if (char === ',') {
-                tokens.push({ startIndex: pos, scopes: 'delimiter.comma.json' });
-                pos++;
-                continue;
-            }
-
-            if (char === '"') {
-                let end = pos + 1;
-                while (end < len && line[end] !== '"') {
-                    if (line[end] === '\\') end++;
-                    end++;
-                }
-                end = Math.min(end + 1, len);
-
-                // 后面跟冒号的是键，否则是值
-                let after = end;
-                while (after < len && /\s/.test(line[after])) after++;
-                const isKey = after < len && line[after] === ':';
-
-                tokens.push({
-                    startIndex: pos,
-                    scopes: isKey ? 'string.key.json' : 'string.value.json'
-                });
-                pos = end;
-                continue;
-            }
-
-            if (/[-0-9]/.test(char)) {
-                let end = pos;
-                while (end < len && /[0-9.eE+-]/.test(line[end])) end++;
-                tokens.push({ startIndex: pos, scopes: 'number.json' });
-                pos = end;
-                continue;
-            }
-
-            const rest = line.slice(pos);
-            if (rest.startsWith('true') || rest.startsWith('false') || rest.startsWith('null')) {
-                const word = rest.startsWith('true') ? 'true' : rest.startsWith('false') ? 'false' : 'null';
-                tokens.push({ startIndex: pos, scopes: 'keyword.json' });
-                pos += word.length;
-                continue;
-            }
-
-            tokens.push({ startIndex: pos, scopes: '' });
-            pos++;
-        }
-
-        return { tokens, endState: state };
-    }
-});
-
 // 从 content script 获取扩展资源的路径
 const paths = await new Promise(resolve => {
     window.addEventListener('message', event => {
@@ -139,19 +57,40 @@ const monaco = await new Promise(resolve => {
 
 await loadCSS(paths.css);
 
-// 手动注册 JSON 语法高亮
-monaco.languages.register({ id: 'json' });
-monaco.languages.setTokensProvider('json', createJsonTokenizer());
-
 // 通知 content script 我们准备好了
 window.postMessage({ type: 'MONACO_INIT' }, '*');
 
-// 接收 JSON 内容，初始化编辑器
-window.addEventListener('message', event => {
-    if (event.data?.type === 'JSON_CONTENT') {
+// 接收内容和语言类型，初始化编辑器
+window.addEventListener('message', async event => {
+    if (event.data?.type === 'CONTENT') {
+        const { content, language } = event.data;
+
+        // 根据语言类型加载对应的语言服务
+        if (language === 'json') {
+            await new Promise(resolve => {
+                require(['vs/language/json/jsonMode'], resolve);
+            });
+        } else if (language === 'javascript' || language === 'typescript') {
+            await new Promise(resolve => {
+                require(['vs/language/typescript/tsMode'], resolve);
+            });
+        } else if (language === 'css' || language === 'less' || language === 'scss') {
+            await new Promise(resolve => {
+                require(['vs/language/css/cssMode'], resolve);
+            });
+        } else if (language === 'yaml') {
+            await new Promise(resolve => {
+                require(['vs/basic-languages/yaml'], resolve);
+            });
+        } else if (language === 'markdown') {
+            await new Promise(resolve => {
+                require(['vs/basic-languages/markdown'], resolve);
+            });
+        }
+
         monaco.editor.create(document.getElementById('monaco-root'), {
-            value: event.data.content,
-            language: 'json',
+            value: content,
+            language,
             theme: 'vs-dark',
             automaticLayout: true,
             readOnly: true,

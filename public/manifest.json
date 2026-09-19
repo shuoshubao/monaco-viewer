@@ -11,7 +11,7 @@
     "declarative_net_request": {
         "rule_resources": [
             {
-                "id": "json-content-type",
+                "id": "content-type",
                 "enabled": true,
                 "path": "rules.json"
             }
