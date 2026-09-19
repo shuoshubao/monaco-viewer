@@ -11,8 +11,8 @@
         return;
     }
 
-    const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'vs-dark' : 'vs';
-    const resolveTheme = (themeSetting) => themeSetting === 'auto' ? getSystemTheme() : themeSetting;
+    const getSystemTheme = () => (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'vs-dark' : 'vs');
+    const resolveTheme = themeSetting => (themeSetting === 'auto' ? getSystemTheme() : themeSetting);
 
     // 读取用户设置
     const settings = await chrome.storage.local.get(['theme', 'markdownPreview']);
@@ -83,7 +83,7 @@ body {
     initScript.onload = () => initScript.remove();
     document.head.appendChild(initScript);
 
-    const applyTheme = (newActualTheme) => {
+    const applyTheme = newActualTheme => {
         actualTheme = newActualTheme;
         const bg = actualTheme === 'vs' ? '#ffffff' : '#1e1e1e';
         document.body.style.background = bg;

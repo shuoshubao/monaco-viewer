@@ -1,203 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Monaco Viewer</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
-<head>
-    <meta charset="utf-8" />
-    <title>Monaco Viewer</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            width: 320px;
-            padding: 16px;
-            transition: background 0.2s, color 0.2s;
-            /* 默认深色，避免闪白 */
-            background: #1e1e1e;
-            color: #e0e0e0;
-
-            &[data-popup-theme="dark"] {
+            body {
+                width: 320px;
+                padding: 16px;
+                transition:
+                    background 0.2s,
+                    color 0.2s;
+                /* 默认深色，避免闪白 */
                 background: #1e1e1e;
                 color: #e0e0e0;
+
+                &[data-popup-theme='dark'] {
+                    background: #1e1e1e;
+                    color: #e0e0e0;
+                }
+
+                &[data-popup-theme='light'] {
+                    background: #ffffff;
+                    color: #24292e;
+                }
             }
 
-            &[data-popup-theme="light"] {
-                background: #ffffff;
-                color: #24292e;
-            }
-        }
+            .header {
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 20px;
 
-        .header {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
+                body[data-popup-theme='dark'] & {
+                    color: #fff;
+                }
 
-            body[data-popup-theme="dark"] & {
-                color: #fff;
-            }
-
-            body[data-popup-theme="light"] & {
-                color: #24292e;
-            }
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 12px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-
-            body[data-popup-theme="dark"] & {
-                color: #999;
+                body[data-popup-theme='light'] & {
+                    color: #24292e;
+                }
             }
 
-            body[data-popup-theme="light"] & {
-                color: #666;
-            }
-        }
-
-        /* Segmented 样式 */
-        .segmented {
-            display: inline-flex;
-            padding: 2px;
-            border-radius: 8px;
-
-            body[data-popup-theme="dark"] & {
-                background: #2d2d2d;
+            .setting-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 0;
             }
 
-            body[data-popup-theme="light"] & {
-                background: #f0f0f0;
-            }
-        }
-
-        .segmented-item {
-            flex: 1;
-            padding: 6px 16px;
-            border: none;
-            border-radius: 6px;
-            background: transparent;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-
-            body[data-popup-theme="dark"] & {
-                color: #999;
+            .setting-label {
+                font-size: 13px;
             }
 
-            body[data-popup-theme="light"] & {
-                color: #666;
+            /* Segmented 样式 */
+            .segmented {
+                display: inline-flex;
+                padding: 2px;
+                border-radius: 8px;
+
+                body[data-popup-theme='dark'] & {
+                    background: #2d2d2d;
+                }
+
+                body[data-popup-theme='light'] & {
+                    background: #f0f0f0;
+                }
             }
 
-            body[data-popup-theme="dark"] &.active {
-                background: #3c3c3c;
-                color: #fff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            .segmented-item {
+                padding: 5px 12px;
+                border: none;
+                border-radius: 6px;
+                background: transparent;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+
+                body[data-popup-theme='dark'] & {
+                    color: #999;
+                }
+
+                body[data-popup-theme='light'] & {
+                    color: #666;
+                }
+
+                body[data-popup-theme='dark'] &.active {
+                    background: #3c3c3c;
+                    color: #fff;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+
+                body[data-popup-theme='light'] &.active {
+                    background: #ffffff;
+                    color: #24292e;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
             }
 
-            body[data-popup-theme="light"] &.active {
-                background: #ffffff;
-                color: #24292e;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-        }
+            .toggle {
+                width: 36px;
+                height: 20px;
+                border-radius: 10px;
+                position: relative;
+                cursor: pointer;
+                transition: background 0.2s;
 
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-        }
+                body[data-popup-theme='dark'] & {
+                    background: #444;
+                }
 
-        .setting-label {
-            font-size: 13px;
-        }
+                body[data-popup-theme='light'] & {
+                    background: #d9d9d9;
+                }
 
-        .toggle {
-            width: 36px;
-            height: 20px;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.2s;
+                &.active {
+                    background: #007acc;
+                }
 
-            body[data-popup-theme="dark"] & {
-                background: #444;
-            }
+                &::after {
+                    content: '';
+                    position: absolute;
+                    width: 16px;
+                    height: 16px;
+                    background: #fff;
+                    border-radius: 50%;
+                    top: 2px;
+                    left: 2px;
+                    transition: transform 0.2s;
+                }
 
-            body[data-popup-theme="light"] & {
-                background: #d9d9d9;
-            }
-
-            &.active {
-                background: #007acc;
-            }
-
-            &::after {
-                content: '';
-                position: absolute;
-                width: 16px;
-                height: 16px;
-                background: #fff;
-                border-radius: 50%;
-                top: 2px;
-                left: 2px;
-                transition: transform 0.2s;
+                &.active::after {
+                    transform: translateX(16px);
+                }
             }
 
-            &.active::after {
-                transform: translateX(16px);
+            .footer {
+                margin-top: 24px;
+                padding-top: 12px;
+                border-top: 1px solid;
+                font-size: 11px;
+                text-align: center;
+
+                body[data-popup-theme='dark'] & {
+                    border-top-color: #333;
+                    color: #666;
+                }
+
+                body[data-popup-theme='light'] & {
+                    border-top-color: #eaecef;
+                    color: #999;
+                }
             }
-        }
+        </style>
+        <script src="popup.js"></script>
+    </head>
 
-        .footer {
-            margin-top: 24px;
-            padding-top: 12px;
-            border-top: 1px solid;
-            font-size: 11px;
-            text-align: center;
+    <body>
+        <div class="header">Monaco Viewer</div>
 
-            body[data-popup-theme="dark"] & {
-                border-top-color: #333;
-                color: #666;
-            }
-
-            body[data-popup-theme="light"] & {
-                border-top-color: #eaecef;
-                color: #999;
-            }
-        }
-    </style>
-    <script src="popup.js"></script>
-</head>
-
-<body>
-    <div class="header">Monaco Viewer</div>
-
-    <div class="section">
-        <div class="section-title">主题</div>
-        <div class="segmented">
-            <button class="segmented-item" data-theme="vs-dark">Dark</button>
-            <button class="segmented-item" data-theme="vs">Light</button>
-            <button class="segmented-item" data-theme="auto">System</button>
+        <div class="setting-row">
+            <span class="setting-label">主题</span>
+            <div class="segmented">
+                <button class="segmented-item" data-theme="vs-dark">Dark</button>
+                <button class="segmented-item" data-theme="vs">Light</button>
+                <button class="segmented-item" data-theme="auto">System</button>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
         <div class="setting-row">
             <span class="setting-label">Markdown 预览</span>
             <div class="toggle" id="markdownToggle"></div>
         </div>
-    </div>
 
-    <div class="footer">Version 0.1.0</div>
-</body>
-
+        <div class="footer">Version 0.1.0</div>
+    </body>
 </html>

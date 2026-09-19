@@ -1,7 +1,7 @@
-const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+const getSystemTheme = () => (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-const applyPopupTheme = (themeSetting) => {
-    const actualTheme = themeSetting === 'auto' ? getSystemTheme() : (themeSetting === 'vs-dark' ? 'dark' : 'light');
+const applyPopupTheme = themeSetting => {
+    const actualTheme = themeSetting === 'auto' ? getSystemTheme() : themeSetting === 'vs-dark' ? 'dark' : 'light';
     document.body.dataset.popupTheme = actualTheme;
 };
 
@@ -20,10 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 读取当前设置
     const loadSettings = async () => {
-        const { theme = 'auto', markdownPreview = false } = await chrome.storage.local.get([
-            'theme',
-            'markdownPreview'
-        ]);
+        const { theme = 'auto', markdownPreview = false } = await chrome.storage.local.get(['theme', 'markdownPreview']);
 
         // 更新 popup 自己的主题
         applyPopupTheme(theme);
