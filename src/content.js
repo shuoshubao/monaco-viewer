@@ -69,7 +69,7 @@ body {
                     type: 'PATHS',
                     paths: {
                         loader: chrome.runtime.getURL('vendor/vs/loader.js'),
-                        vs: chrome.runtime.getURL('vendor/vs/'),
+                        vs: chrome.runtime.getURL('vendor/vs'),
                         css: chrome.runtime.getURL('vendor/vs/editor/editor.main.css')
                     }
                 },

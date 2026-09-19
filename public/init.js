@@ -80,11 +80,11 @@ window.addEventListener('message', async event => {
             });
         } else if (language === 'yaml') {
             await new Promise(resolve => {
-                require(['vs/basic-languages/yaml'], resolve);
+                require(['vs/basic-languages/yaml/yaml'], resolve);
             });
         } else if (language === 'markdown') {
             await new Promise(resolve => {
-                require(['vs/basic-languages/markdown'], resolve);
+                require(['vs/basic-languages/markdown/markdown'], resolve);
             });
         }
 
