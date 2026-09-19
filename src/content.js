@@ -1,31 +1,27 @@
-// 在 document_start 时运行，等 DOM 加载完成后检测
-async function init() {
-    // 等 body 加载完成
+// 检测页面是否是 JSON，是的话注入 Monaco 渲染
+(async () => {
+    // 等 DOM 加载完成
     if (!document.body) {
         await new Promise(resolve => {
-            if (document.body) return resolve();
             document.addEventListener('DOMContentLoaded', resolve, { once: true });
         });
     }
 
-    // 读取页面内容
-    let jsonText = document.body?.innerText || document.documentElement.innerText || '';
-
-    // 清理可能的行号（Chrome 内置 viewer 会显示行号）
-    jsonText = jsonText
+    // 读取页面文本，清理 Chrome 内置 viewer 的行号
+    let jsonText = (document.body?.innerText || document.documentElement.innerText || '')
         .split('\n')
         .map(line => line.replace(/^\d+\s+/, ''))
         .join('\n')
         .trim();
 
-    // 尝试解析为 JSON，判断是否是 JSON 页面
+    // 不是 JSON 就退出
     try {
         JSON.parse(jsonText);
     } catch {
-        return; // 不是 JSON，直接退出
+        return;
     }
 
-    // 清空页面
+    // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';
 
     // 注入基础样式
@@ -37,19 +33,20 @@ async function init() {
   `;
     document.head.appendChild(style);
 
-    // 创建容器
+    // Monaco 容器
     const container = document.createElement('div');
     container.id = 'monaco-root';
     document.body.appendChild(container);
 
-    // 注入初始化脚本到主世界
+    // 注入 init.js 到主世界，加载并初始化 Monaco
     const initScript = document.createElement('script');
     initScript.src = chrome.runtime.getURL('init.js');
     initScript.onload = () => initScript.remove();
     document.head.appendChild(initScript);
 
-    // 把 JSON 文本传到主世界
+    // 和主世界的 init.js 通信
     window.addEventListener('message', event => {
+        // init.js 请求扩展资源的路径
         if (event.data?.type === 'GET_PATHS') {
             window.postMessage(
                 {
@@ -63,16 +60,9 @@ async function init() {
                 '*'
             );
         }
+        // Monaco 初始化完成，发送 JSON 内容给它渲染
         if (event.data?.type === 'MONACO_INIT') {
-            window.postMessage(
-                {
-                    type: 'JSON_CONTENT',
-                    content: jsonText
-                },
-                '*'
-            );
+            window.postMessage({ type: 'JSON_CONTENT', content: jsonText }, '*');
         }
     });
-}
-
-init();
+})();
