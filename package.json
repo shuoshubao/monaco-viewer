@@ -1,12 +1,5 @@
 {
-    "name": "json-viewer",
-    "version": "1.0.0",
-    "description": "Chrome extension Monaco viewer",
-    "type": "module",
-    "scripts": {
-        "build": "vite build && cp src/background.js dist/background.js"
-    },
-    "devDependencies": {
-        "vite": "^8.3.0"
-    }
+    "name": "monaco-viewer",
+    "version": "0.1.0",
+    "description": "Chrome extension to view code files with Monaco Editor"
 }

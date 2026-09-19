@@ -68,9 +68,9 @@ body {
                 {
                     type: 'PATHS',
                     paths: {
-                        loader: chrome.runtime.getURL('vendor/vs/loader.js'),
-                        vs: chrome.runtime.getURL('vendor/vs'),
-                        css: chrome.runtime.getURL('vendor/vs/editor/editor.main.css')
+                        loader: chrome.runtime.getURL('monaco-editor/vs/loader.js'),
+                        vs: chrome.runtime.getURL('monaco-editor/vs'),
+                        css: chrome.runtime.getURL('monaco-editor/vs/editor/editor.main.css')
                     }
                 },
                 '*'
