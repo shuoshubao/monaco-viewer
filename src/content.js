@@ -11,9 +11,13 @@
         return;
     }
 
+    const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'vs-dark' : 'vs';
+    const resolveTheme = (themeSetting) => themeSetting === 'auto' ? getSystemTheme() : themeSetting;
+
     // 读取用户设置
     const settings = await chrome.storage.local.get(['theme', 'markdownPreview']);
-    const theme = settings.theme || 'vs-dark';
+    let themeSetting = settings.theme || 'auto';
+    let actualTheme = resolveTheme(themeSetting);
     const markdownPreview = settings.markdownPreview || false;
 
     // 等 DOM 加载完成
@@ -41,7 +45,7 @@
     document.head.appendChild(favicon);
 
     // 注入基础样式
-    const bgColor = theme === 'vs' ? '#ffffff' : '#1e1e1e';
+    const bgColor = actualTheme === 'vs' ? '#ffffff' : '#1e1e1e';
     const style = document.createElement('style');
     style.textContent = `
 * {
@@ -79,6 +83,21 @@ body {
     initScript.onload = () => initScript.remove();
     document.head.appendChild(initScript);
 
+    const applyTheme = (newActualTheme) => {
+        actualTheme = newActualTheme;
+        const bg = actualTheme === 'vs' ? '#ffffff' : '#1e1e1e';
+        document.body.style.background = bg;
+        window.postMessage({ type: 'UPDATE_THEME', theme: actualTheme }, '*');
+    };
+
+    // auto 模式下监听系统主题变化
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', () => {
+        if (themeSetting === 'auto') {
+            applyTheme(resolveTheme('auto'));
+        }
+    });
+
     // 和主世界的 init.js 通信
     window.addEventListener('message', event => {
         // init.js 请求扩展资源的路径
@@ -91,7 +110,7 @@ body {
                         vs: chrome.runtime.getURL('monaco-editor/vs'),
                         css: chrome.runtime.getURL('monaco-editor/vs/editor/editor.main.css')
                     },
-                    settings: { theme, markdownPreview },
+                    settings: { theme: actualTheme, markdownPreview },
                     lib: {
                         markdownIt: chrome.runtime.getURL('markdown-it/markdown-it.min.js')
                     }
@@ -108,11 +127,8 @@ body {
     // 监听来自 popup 的消息
     chrome.runtime.onMessage.addListener(message => {
         if (message?.type === 'UPDATE_THEME') {
-            // 更新背景色
-            const bgColor = message.theme === 'vs' ? '#ffffff' : '#1e1e1e';
-            document.body.style.background = bgColor;
-            // 转发给 init.js
-            window.postMessage({ type: 'UPDATE_THEME', theme: message.theme }, '*');
+            themeSetting = message.theme;
+            applyTheme(resolveTheme(themeSetting));
         }
         if (message?.type === 'UPDATE_MARKDOWN_PREVIEW') {
             // 转发给 init.js

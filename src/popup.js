@@ -1,15 +1,22 @@
 const themeButtons = document.querySelectorAll('.segmented-item');
 const markdownToggle = document.getElementById('markdownToggle');
 
+const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+const applyPopupTheme = (themeSetting) => {
+    const actualTheme = themeSetting === 'auto' ? getSystemTheme() : (themeSetting === 'vs-dark' ? 'dark' : 'light');
+    document.body.dataset.popupTheme = actualTheme;
+};
+
 // 读取当前设置
 const loadSettings = async () => {
-    const { theme = 'vs-dark', markdownPreview = false } = await chrome.storage.local.get([
+    const { theme = 'auto', markdownPreview = false } = await chrome.storage.local.get([
         'theme',
         'markdownPreview'
     ]);
 
     // 更新 popup 自己的主题
-    document.body.dataset.popupTheme = theme === 'vs-dark' ? 'dark' : 'light';
+    applyPopupTheme(theme);
 
     // 更新主题按钮状态
     themeButtons.forEach(btn => {
@@ -27,6 +34,14 @@ const loadSettings = async () => {
         markdownToggle.classList.remove('active');
     }
 };
+
+// 系统主题变化时，如果是 auto 模式就更新 popup
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
+    const { theme = 'auto' } = await chrome.storage.local.get('theme');
+    if (theme === 'auto') {
+        applyPopupTheme(theme);
+    }
+});
 
 // 主题切换
 themeButtons.forEach(btn => {

@@ -177,7 +177,7 @@ const disposeEditor = () => {
     }
 };
 
-const renderMarkdown = async (content) => {
+const renderMarkdown = async content => {
     disposeEditor();
     await ensureMarkdownIt();
     const md = window.markdownit();
@@ -231,7 +231,6 @@ const renderEditor = async (content, language) => {
         theme: settings.theme || 'vs-dark',
         readOnly: true,
         fontSize: 14,
-        tabSize: 4,
         wordWrap: 'on',
         folding: true,
         automaticLayout: true,
