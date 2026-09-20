@@ -138,6 +138,97 @@
                 }
             }
 
+            /* Cookie 复制 */
+            .cookie-section {
+                margin-top: 12px;
+                padding-top: 16px;
+                border-top: 1px solid;
+
+                body[data-popup-theme='dark'] & {
+                    border-top-color: #333;
+                }
+
+                body[data-popup-theme='light'] & {
+                    border-top-color: #eaecef;
+                }
+            }
+
+            .cookie-section .setting-label {
+                display: block;
+                margin-bottom: 10px;
+                font-weight: 600;
+            }
+
+            .cookie-input {
+                width: 100%;
+                margin-bottom: 8px;
+                padding: 7px 10px;
+                border-radius: 6px;
+                border: 1px solid transparent;
+                font-size: 12px;
+                outline: none;
+                transition:
+                    border-color 0.2s,
+                    background 0.2s;
+
+                body[data-popup-theme='dark'] & {
+                    background: #2d2d2d;
+                    color: #e0e0e0;
+                    border-color: #3c3c3c;
+                }
+
+                body[data-popup-theme='light'] & {
+                    background: #f6f8fa;
+                    color: #24292e;
+                    border-color: #e1e4e8;
+                }
+
+                &:focus {
+                    border-color: #007acc;
+                }
+            }
+
+            .cookie-btn {
+                width: 100%;
+                margin-top: 4px;
+                padding: 8px;
+                border: none;
+                border-radius: 6px;
+                background: #007acc;
+                color: #fff;
+                font-size: 13px;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover {
+                    background: #0069b3;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: default;
+                }
+            }
+
+            .cookie-status {
+                margin-top: 8px;
+                font-size: 11px;
+                min-height: 14px;
+                text-align: center;
+
+                &:empty {
+                    display: none;
+                }
+
+                &.error {
+                    color: #e5534b;
+                }
+
+                &.success {
+                    color: #3fb950;
+                }
+            }
+
             .footer {
                 margin-top: 24px;
                 padding-top: 12px;
@@ -174,6 +265,14 @@
         <div class="setting-row">
             <span class="setting-label">Markdown 预览</span>
             <div class="toggle" id="markdownToggle"></div>
+        </div>
+
+        <div class="cookie-section" id="cookieSection" hidden>
+            <span class="setting-label">Cookie 复制</span>
+            <input type="text" id="cookieSource" class="cookie-input" placeholder="源页面 URL" />
+            <input type="text" id="cookieTarget" class="cookie-input" placeholder="目标页面 URL" />
+            <button id="cookieCopyBtn" class="cookie-btn">复制 Cookie</button>
+            <div id="cookieStatus" class="cookie-status"></div>
         </div>
 
         <div class="footer">Version 0.1.0</div>
