@@ -4,14 +4,15 @@
         <meta charset="utf-8" />
         <title>Monaco Viewer</title>
         <style>
-            * {
+            *,
+            *::before,
+            *::after {
                 box-sizing: border-box;
-                margin: 0;
-                padding: 0;
             }
 
             body {
                 width: 320px;
+                margin: 0;
                 padding: 16px;
                 transition:
                     background 0.2s,
@@ -228,24 +229,6 @@
                     color: #3fb950;
                 }
             }
-
-            .footer {
-                margin-top: 24px;
-                padding-top: 12px;
-                border-top: 1px solid;
-                font-size: 11px;
-                text-align: center;
-
-                body[data-popup-theme='dark'] & {
-                    border-top-color: #333;
-                    color: #666;
-                }
-
-                body[data-popup-theme='light'] & {
-                    border-top-color: #eaecef;
-                    color: #999;
-                }
-            }
         </style>
         <script src="popup.js"></script>
     </head>
@@ -267,6 +250,11 @@
             <div class="toggle" id="markdownToggle"></div>
         </div>
 
+        <div class="setting-row">
+            <span class="setting-label">侧滑</span>
+            <div class="toggle" id="sidebarToggle"></div>
+        </div>
+
         <div class="cookie-section" id="cookieSection" hidden>
             <span class="setting-label">Cookie 复制</span>
             <input type="text" id="cookieSource" class="cookie-input" placeholder="源页面 URL" />
@@ -274,7 +262,5 @@
             <button id="cookieCopyBtn" class="cookie-btn">复制 Cookie</button>
             <div id="cookieStatus" class="cookie-status"></div>
         </div>
-
-        <div class="footer">Version 0.1.0</div>
     </body>
 </html>

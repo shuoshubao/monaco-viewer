@@ -77,7 +77,9 @@
     const bgColor = actualTheme === 'vs' ? '#ffffff' : '#1e1e1e';
     const style = document.createElement('style');
     style.textContent = `
-* {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 body {

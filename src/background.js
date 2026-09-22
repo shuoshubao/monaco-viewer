@@ -44,3 +44,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.tabs.onRemoved.addListener(tabId => tabTypes.delete(tabId));
+
+// 侧边栏没有 onClosed 事件，只能靠它页面里那条长连接的生命周期来判断开关状态：
+// 连上说明打开了，断开说明被关了（用户点 X、切换面板、或被 setOptions 禁用）
+chrome.runtime.onConnect.addListener(port => {
+    if (port.name !== 'sidepanel') {
+        return;
+    }
+    chrome.storage.local.set({ sidebar: true });
+    port.onDisconnect.addListener(() => {
+        chrome.storage.local.set({ sidebar: false });
+    });
+});

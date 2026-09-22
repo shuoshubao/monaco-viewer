@@ -47,15 +47,19 @@ const copyCookies = async (sourceUrl, targetUrl) => {
 window.addEventListener('DOMContentLoaded', () => {
     const themeButtons = document.querySelectorAll('.segmented-item');
     const markdownToggle = document.getElementById('markdownToggle');
+    const sidebarToggle = document.getElementById('sidebarToggle');
     const cookieSection = document.getElementById('cookieSection');
     const cookieSource = document.getElementById('cookieSource');
     const cookieTarget = document.getElementById('cookieTarget');
     const cookieCopyBtn = document.getElementById('cookieCopyBtn');
     const cookieStatus = document.getElementById('cookieStatus');
 
+    // 当前标签页 id，popup 打开时就缓存，点击时才能同步调用 sidePanel.open
+    let currentTabId = null;
+
     // 读取当前设置
     const loadSettings = async () => {
-        const { theme = 'auto', markdownPreview = false } = await chrome.storage.local.get(['theme', 'markdownPreview']);
+        const { theme = 'auto', markdownPreview = false, sidebar = false } = await chrome.storage.local.get(['theme', 'markdownPreview', 'sidebar']);
 
         // 更新 popup 自己的主题
         applyPopupTheme(theme);
@@ -74,6 +78,13 @@ window.addEventListener('DOMContentLoaded', () => {
             markdownToggle.classList.add('active');
         } else {
             markdownToggle.classList.remove('active');
+        }
+
+        // 更新侧滑开关状态
+        if (sidebar) {
+            sidebarToggle.classList.add('active');
+        } else {
+            sidebarToggle.classList.remove('active');
         }
     };
 
@@ -103,8 +114,29 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 侧滑：开关 Chrome 浏览器级别的侧边栏（Side Panel），不是往页面里插元素
+    // 注意 sidePanel.open 必须在用户手势的同步任务里调用，所以这里不能 await 前置的异步查询，
+    // tabId 用 popup 打开时就缓存好的那个，setOptions 也只发不等
+    // sidebar 状态不在这里写，统一由 background 按侧边栏的实际开关来写，避免 open 失败时状态失真
+    sidebarToggle.addEventListener('click', () => {
+        const isActive = sidebarToggle.classList.toggle('active');
+        const tabId = currentTabId;
+        if (tabId === null) {
+            sidebarToggle.classList.toggle('active');
+            return;
+        }
+        if (isActive) {
+            chrome.sidePanel.setOptions({ tabId, path: 'sidepanel.html', enabled: true });
+            chrome.sidePanel.open({ tabId });
+        } else {
+            // sidePanel 没有 close 方法，禁用当前 tab 的面板等效于关闭
+            chrome.sidePanel.setOptions({ tabId, enabled: false });
+        }
+    });
+
     // 只有 http/https 页面才有 cookie 可复制，其他页面（chrome://、file:// 等）整块隐藏
     chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+        currentTabId = tab?.id ?? null;
         if (!tab?.url) {
             return;
         }
@@ -172,6 +204,15 @@ window.addEventListener('DOMContentLoaded', () => {
         } finally {
             cookieCopyBtn.disabled = false;
         }
+    });
+
+    // 侧边栏可能被用户手动关掉（点 X 或切到别的面板），background 会同步 sidebar 状态，
+    // popup 开着时监听 storage 变化，让开关状态跟实际情况一致
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local' || !changes.sidebar) {
+            return;
+        }
+        sidebarToggle.classList.toggle('active', changes.sidebar.newValue === true);
     });
 
     // 初始化
