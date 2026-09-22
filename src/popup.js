@@ -114,10 +114,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 侧滑：开关 Chrome 浏览器级别的侧边栏（Side Panel），不是往页面里插元素
-    // 注意 sidePanel.open 必须在用户手势的同步任务里调用，所以这里不能 await 前置的异步查询，
-    // tabId 用 popup 打开时就缓存好的那个，setOptions 也只发不等
-    // sidebar 状态不在这里写，统一由 background 按侧边栏的实际开关来写，避免 open 失败时状态失真
+    // sidePanel.open 只能在用户手势的同步任务里调用，所以不能 await 任何前置异步操作
     sidebarToggle.addEventListener('click', () => {
         const isActive = sidebarToggle.classList.toggle('active');
         const tabId = currentTabId;
@@ -206,8 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 侧边栏可能被用户手动关掉（点 X 或切到别的面板），background 会同步 sidebar 状态，
-    // popup 开着时监听 storage 变化，让开关状态跟实际情况一致
+    // 侧边栏被手动关掉时 background 会改写 sidebar，popup 开着就跟着更新开关
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area !== 'local' || !changes.sidebar) {
             return;

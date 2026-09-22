@@ -17,9 +17,8 @@
                 transition:
                     background 0.2s,
                     color 0.2s;
-                /* 默认深色，避免闪白 */
-                background: #1e1e1e;
-                color: #e0e0e0;
+                background: #ffffff;
+                color: #24292e;
 
                 &[data-popup-theme='dark'] {
                     background: #1e1e1e;
@@ -29,6 +28,13 @@
                 &[data-popup-theme='light'] {
                     background: #ffffff;
                     color: #24292e;
+                }
+            }
+
+            @media (prefers-color-scheme: dark) {
+                body:not([data-popup-theme]) {
+                    background: #1e1e1e;
+                    color: #e0e0e0;
                 }
             }
 
