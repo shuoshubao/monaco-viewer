@@ -1,5 +1,8 @@
 .DS_Store
 node_modules
 
-monaco-viewer.zip
-.build
+releases
+
+# crx 签名私钥，决定扩展 ID，不要提交
+*.pem
+
