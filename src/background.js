@@ -8,7 +8,9 @@ const contentTypes = {
     less: /text\/(x-)?less/i,
     scss: /text\/(x-)?s[ac]ss/i,
     yaml: /(application|text)\/(x-)?ya?ml/i,
-    markdown: /text\/(x-)?markdown/i
+    markdown: /text\/(x-)?markdown/i,
+    // text/plain 不能确定类型，交给 content script 读完内容再判断是不是 JSON，放最后兜底
+    plain: /text\/plain/i
 };
 
 chrome.webRequest.onHeadersReceived.addListener(

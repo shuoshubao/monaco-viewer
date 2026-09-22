@@ -4,7 +4,7 @@
     document.documentElement.style.display = 'none';
 
     // 问 background 当前 tab 的内容类型
-    const { type } = await chrome.runtime.sendMessage({ type: 'CHECK_TYPE' });
+    let { type } = await chrome.runtime.sendMessage({ type: 'CHECK_TYPE' });
     if (!type) {
         // 不是我们支持的类型，显示原页面
         document.documentElement.style.display = '';
@@ -28,7 +28,36 @@
     }
 
     // 读取页面文本
-    const content = document.body?.innerText || document.documentElement.innerText || '';
+    let content = document.body?.innerText || document.documentElement.innerText || '';
+
+    // 解析并按 4 空格缩进格式化 JSON，不是 JSON 则返回 null
+    const formatJSON = text => {
+        const trimmed = text.trim();
+        // 只认对象和数组，裸的数字/字符串当普通文本
+        if (!/^[[{]/.test(trimmed)) {
+            return null;
+        }
+        try {
+            return JSON.stringify(JSON.parse(trimmed), null, 4);
+        } catch {
+            return null;
+        }
+    };
+
+    // text/plain 只看 header 判断不出类型，用内容判断是不是 JSON
+    if (type === 'plain') {
+        const formatted = formatJSON(content);
+        if (formatted === null) {
+            // 不是 JSON，原样显示原页面
+            document.documentElement.style.display = '';
+            return;
+        }
+        content = formatted;
+        type = 'json';
+    } else if (type === 'json') {
+        // 接口返回的 JSON 通常是压缩的，格式化后再展示；解析失败就保持原样
+        content = formatJSON(content) ?? content;
+    }
 
     // 清空原页面，准备渲染 Monaco
     document.documentElement.innerHTML = '';

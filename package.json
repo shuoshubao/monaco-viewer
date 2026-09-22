@@ -1,5 +1,13 @@
 {
     "name": "monaco-viewer",
-    "version": "0.1.0",
-    "description": "Chrome extension to view code files with Monaco Editor"
+    "version": "0.0.0",
+    "description": "Chrome extension to view code files with Monaco Editor",
+    "scripts": {
+        "build": "rm -rf .build monaco-viewer.zip && mkdir .build && cp -R src .build/monaco-viewer && cd .build && zip -rq ../monaco-viewer.zip monaco-viewer -x '*.DS_Store' '*/_metadata/*' && cd .. && rm -rf .build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/shuoshubao/monaco-viewer.git"
+    },
+    "author": "shuoshubao <shuoshubao@gmail.com>"
 }
