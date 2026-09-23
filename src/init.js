@@ -238,6 +238,7 @@ const renderEditor = async (content, language) => {
         fontSize: 14,
         wordWrap: 'on',
         folding: true,
+        foldingStrategy: 'indentation',
         automaticLayout: true,
         renderLineHighlight: 'line',
         scrollBeyondLastLine: false
